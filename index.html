@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light" class="mdui-theme-auto">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<meta name="description" content="松鼠兽牌 toy —— 把旧手机变成专属兽牌">
+<title>松鼠兽牌</title>
+<link rel="icon" type="image/png" href="./assets/img/qidong.png">
+<link rel="apple-touch-icon" href="./assets/img/qidong.png">
+<link rel="stylesheet" href="./assets/vendor/mdui/mdui.css">
+<link rel="stylesheet" href="./assets/css/app.css">
+<script>
+  /* 电脑浏览器直接进入提示页，避免加载后闪一下应用界面 */
+  (function () {
+    try {
+      var forced = new URLSearchParams(location.search).get('mobile') === '1' &&
+        /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+      var ua = navigator.userAgent || '';
+      var isPhone = forced ||
+        /Android|iPhone|iPad|iPod|Mobile|HarmonyOS/i.test(ua) ||
+        window.matchMedia('(pointer: coarse)').matches;
+      if (!isPhone) document.documentElement.setAttribute('data-access', 'desktop');
+    } catch (_) {}
+  })();
+  /* Toy 官方 JS SDK：在 Toy 页（含预览）预加载，供容器沉浸使用 */
+  (function () {
+    try {
+      if (!/^\/toy\//.test(location.pathname)) return;
+      var s = document.createElement('script');
+      s.src = 'https://s1.hdslb.com/bfs/seed/toy/app/sdk/toy-sdk.js';
+      s.async = true;
+      document.head.appendChild(s);
+    } catch (_) {}
+  })();
+</script>
+</head>
+<body>
+<div class="shell">
+  <mdui-top-app-bar id="appbar" style="position:relative">
+    <mdui-button-icon id="backBtn" data-action="back" aria-label="返回" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    </mdui-button-icon>
+    <mdui-top-app-bar-title id="title">松鼠兽牌</mdui-top-app-bar-title>
+  </mdui-top-app-bar>
+
+  <main id="page" class="page" tabindex="-1"></main>
+
+  <nav id="bottomnav" aria-label="主导航">
+    <button class="nav-item" type="button" data-action="nav-home" data-nav="home" aria-label="主页">
+      <span class="nav-indicator"><span class="nav-icon nav-icon-home"></span></span>
+    </button>
+    <button class="nav-item" type="button" data-action="open-start" data-nav="start" aria-label="启动">
+      <span class="nav-indicator"><span class="nav-icon nav-icon-start"></span></span>
+    </button>
+    <button class="nav-item" type="button" data-action="nav-settings" data-nav="settings" aria-label="设置">
+      <span class="nav-indicator"><span class="nav-icon nav-icon-settings"></span></span>
+    </button>
+  </nav>
+</div>
+
+<!-- 开屏 -->
+<div id="splash" class="splash">
+  <img src="./assets/img/qidong.png" alt="" class="splash-logo">
+</div>
+
+<!-- 电脑访问提示 -->
+<div class="desktop-gate">
+  <div class="gate-card">
+    <div class="gate-intro">
+      <img class="gate-logo" src="./assets/img/qidong.png" alt="松鼠兽牌">
+      <div class="gate-name">松鼠兽牌</div>
+      <h1>请在手机上访问</h1>
+      <p>松鼠兽牌是为手机设计的toy应用，暂不支持电脑页面访问（如果你可以把电脑挂在脖子的话XD）</p>
+    </div>
+    <div class="gate-scan">
+      <div class="gate-qr" id="gateQr" aria-label="手机扫码打开"></div>
+      <p class="gate-hint">用手机扫一扫，继续使用</p>
+      <div class="gate-url" id="gateUrl"></div>
+      <mdui-button variant="outlined" id="gateCopy" data-action="copy-gate-url">复制链接</mdui-button>
+    </div>
+  </div>
+</div>
+
+<!-- 全屏展示 -->
+<div id="fullscreen" class="fullscreen" hidden>
+  <div class="fs-media" id="fsMedia"><div class="fs-rotator" id="fsRotator"></div></div>
+  <div class="fs-battery" id="fsBattery" hidden></div>
+  <div class="fs-hint" id="fsHint"></div>
+  <div class="fs-flip-hint" id="fsFlipHint"></div>
+  <div class="fs-qr" id="fsQr">
+    <div class="fs-qr-stage" id="fsQrStage"><img id="fsQrImg" alt="二维码"></div>
+  </div>
+  <div class="fs-gesture" id="fsGesture"></div>
+</div>
+
+<!-- 裁剪 -->
+<div id="crop" class="crop" hidden>
+  <div class="crop-bar">
+    <mdui-button-icon data-action="crop-close" aria-label="关闭">
+      <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+    </mdui-button-icon>
+    <h2 data-i18n="new_badge">新建兽牌</h2>
+  </div>
+  <div class="crop-stage" id="cropStage">
+    <canvas id="cropCanvas"></canvas>
+    <div class="crop-frame" aria-hidden="true">
+      <i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i>
+    </div>
+    <div class="crop-hint" id="cropHint"></div>
+  </div>
+  <div class="crop-actions">
+    <mdui-button variant="outlined" data-action="crop-reselect" data-i18n="reselect">重新选择</mdui-button>
+    <mdui-button data-action="crop-confirm" data-i18n="confirm_crop">确认裁剪</mdui-button>
+  </div>
+</div>
+
+<!-- 隐藏彩蛋 -->
+<div id="eggSudoku" class="egg-screen" hidden>
+  <button class="egg-close" data-action="egg-close" aria-label="关闭">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+  </button>
+  <div class="sudoku-wrap">
+    <div id="eggGrid" class="sudoku-grid" role="grid" aria-label="彩蛋小游戏"></div>
+    <p id="eggResult" class="sudoku-result" aria-live="polite"></p>
+  </div>
+</div>
+
+<!-- 弹窗 -->
+<div id="modalRoot"></div>
+
+<input type="file" id="fileImage" accept="image/*" hidden>
+<input type="file" id="fileVideo" accept="video/*" hidden>
+<input type="file" id="fileQr" accept="image/*" hidden>
+
+<script src="./assets/vendor/mdui/mdui.global.js"></script>
+<script src="./assets/js/qrcode.js"></script>
+<script src="./assets/js/i18n.js"></script>
+<script src="./assets/js/app.js"></script>
+</body>
+</html>
